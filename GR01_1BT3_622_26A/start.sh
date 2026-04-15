@@ -20,11 +20,11 @@ sleep 10
 
 # Compilar el proyecto
 echo "🔨 Compilando el proyecto..."
-mvn clean install
+./mvnw clean install
 
 # Ejecutar la aplicación
 echo "▶️  Ejecutando la aplicación..."
-mvn spring-boot:run
+./mvnw spring-boot:run
 
 echo "✅ Sistema de Adopciones iniciado en http://localhost:8080"
 
