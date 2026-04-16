@@ -91,6 +91,7 @@ echo Sistema en http://localhost:8080
 echo Esperando a que MySQL esté listo...
 timeout /t 10 >nul
 
+<<<<<<< Updated upstream
 REM ================================
 REM Crear carpeta faltante GraphQL
 REM ================================
@@ -103,6 +104,16 @@ if not exist src\main\resources\graphql-client (
 REM ================================
 REM Compilar proyecto
 REM ================================
+=======
+REM Crear carpeta GraphQL si no existe
+if not exist src\main\resources\graphql-client (
+    echo.
+    echo Creando carpeta graphql-client...
+    mkdir src\main\resources\graphql-client
+)
+
+REM Compilar el proyecto
+>>>>>>> Stashed changes
 echo.
 echo Compilando el proyecto...
 call mvnw.cmd clean install
@@ -118,6 +129,7 @@ REM ================================
 REM Ejecutar aplicación
 REM ================================
 echo.
+<<<<<<< Updated upstream
 echo Ejecutando la aplicacion...
 call mvnw.cmd spring-boot:run
 
@@ -130,3 +142,11 @@ echo.
 
 >>>>>>> Stashed changes
 pause
+=======
+echo Ejecutando la aplicación...
+call mvnw.cmd spring-boot:run
+
+echo.
+echo Sistema de Adopciones iniciado en http://localhost:8080
+pause
+>>>>>>> Stashed changes
