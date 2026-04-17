@@ -169,12 +169,9 @@ public class MascotaController {
     public String buscarMascotas(@RequestParam(value = "nombre", required = false) String nombre, Model model) {
         log.info("Buscando mascotas con nombre: {}", nombre);
 
-        List<Mascota> mascotas;
-        if (nombre != null && !nombre.isEmpty()) {
-            mascotas = mascotaService.buscarPorNombre(nombre);
-        } else {
-            mascotas = mascotaService.obtenerTodasLasMascotas();
-        }
+        List<Mascota> mascotas = StringUtils.hasText(nombre)
+                ? mascotaService.buscarPorNombre(nombre)
+                : mascotaService.obtenerTodasLasMascotas();
 
         model.addAttribute("mascotas", mascotas);
         model.addAttribute("nombre", nombre);
@@ -196,26 +193,11 @@ public class MascotaController {
                 return "redirect:/mascotas/detalle/" + mascotaId + "?error=archivo_vacio";
             }
 
-            // Crear directorio si no existe
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+            //Guardar archivo de foto en servidor
+            String nombreArchivo = guardarArchivo(file);
 
-            // Generar nombre único para el archivo
-            String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path rutaArchivo = uploadPath.resolve(nombreArchivo);
-
-            // Guardar archivo
-            Files.write(rutaArchivo, file.getBytes());
-
-            // Crear y guardar objeto Foto
-            Foto foto = new Foto();
-            foto.setNombreArchivo(nombreArchivo);
-            foto.setRutaFoto(UPLOAD_DIR + nombreArchivo);
-            foto.setEsPrincipal(false);
-
-            mascotaService.agregarFoto(mascotaId, foto);
+            //Guardar objeto Foto asociado a una mascota
+            guardarFotoMascota(mascotaId, nombreArchivo);
 
             log.info("Foto cargada exitosamente");
             return "redirect:/mascotas/detalle/" + mascotaId + "?exito=true";
@@ -223,6 +205,31 @@ public class MascotaController {
             log.error("Error al cargar foto", e);
             return "redirect:/mascotas/detalle/" + mascotaId + "?error=true";
         }
+    }
+
+    private void guardarFotoMascota(Long mascotaId, String nombreArchivo) {
+        Foto foto = new Foto();
+        foto.setNombreArchivo(nombreArchivo);
+        foto.setRutaFoto(UPLOAD_DIR + nombreArchivo);
+        foto.setEsPrincipal(false);
+
+        mascotaService.agregarFoto(mascotaId, foto);
+    }
+
+    private static String guardarArchivo(MultipartFile file) {
+        // Crear directorio si no existe
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Generar nombre único para el archivo
+        String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
+
+        // Guardar archivo
+        Files.write(rutaArchivo, file.getBytes());
+        return nombreArchivo;
     }
 }
 

@@ -39,26 +39,24 @@ public class SolicitudService {
     public List<Solicitud> obtenerPorEstado(String estado) {
         return solicitudRepository.findByEstadoOrderByFecha(estado);
     }
-    
+
     public Solicitud aprobarSolicitud(Long id) {
-        Optional<Solicitud> solicitud = solicitudRepository.findById(id);
-        if (solicitud.isPresent()) {
-            Solicitud s = solicitud.get();
-            s.setEstado("Aprobada");
-            return solicitudRepository.save(s);
-        }
-        return null;
+        return solicitudRepository.findById(id)
+                .map(s -> {
+                    s.setEstado("Aprobada");
+                    return solicitudRepository.save(s);
+                })
+                .orElse(null);
     }
-    
+
     public Solicitud rechazarSolicitud(Long id, String razon) {
-        Optional<Solicitud> solicitud = solicitudRepository.findById(id);
-        if (solicitud.isPresent()) {
-            Solicitud s = solicitud.get();
-            s.setEstado("Rechazada");
-            s.setRazonRechazo(razon);
-            return solicitudRepository.save(s);
-        }
-        return null;
+        return solicitudRepository.findById(id)
+                .map(s -> {
+                    s.setEstado("Rechazada");
+                    s.setRazonRechazo(razon);
+                    return solicitudRepository.save(s);
+                })
+                .orElse(null);
     }
     
     public Solicitud actualizarSolicitud(Solicitud solicitud) {
