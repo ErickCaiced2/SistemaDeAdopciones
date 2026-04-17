@@ -1,10 +1,8 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
-import com.example.gr01_1bt3_622_26a.entity.Solicitud;
-import com.example.gr01_1bt3_622_26a.entity.Solicitante;
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
+import com.example.gr01_1bt3_622_26a.entity.Solicitud;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
-import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,7 +19,6 @@ import java.util.Optional;
 public class SolicitudController {
     
     private final SolicitudService solicitudService;
-    private final SolicitanteService solicitanteService;
     private final MascotaService mascotaService;
     
     @GetMapping("/formulario")
@@ -41,25 +38,16 @@ public class SolicitudController {
             @RequestParam String tipoVivienda,
             @RequestParam(required = false) Boolean tieneJardin,
             RedirectAttributes redirectAttributes) {
-        
-        Optional<Solicitante> solicitante = solicitanteService.obtenerPorId(solicitanteId);
-        Optional<Mascota> mascota = mascotaService.obtenerPorId(mascotaId);
-        
-        if (solicitante.isPresent() && mascota.isPresent()) {
-            Solicitud solicitud = Solicitud.builder()
-                    .solicitante(solicitante.get())
-                    .mascota(mascota.get())
-                    .motivo(motivo)
-                    .numeroMascotas(numeroMascotas)
-                    .tipoVivienda(tipoVivienda)
-                    .tieneJardin(tieneJardin)
-                    .build();
-            
-            Solicitud savedSolicitud = solicitudService.crearSolicitud(solicitud);
+
+        // ── DELEGACIÓN: la lógica de negocio ahora reside en SolicitudService ──
+        Optional<Solicitud> savedSolicitud = solicitudService.crearSolicitud(
+                solicitanteId, mascotaId, motivo, numeroMascotas, tipoVivienda, tieneJardin);
+
+        if (savedSolicitud.isPresent()) {
             redirectAttributes.addFlashAttribute("mensaje", "Solicitud creada exitosamente");
-            return "redirect:/solicitudes/" + savedSolicitud.getId();
+            return "redirect:/solicitudes/" + savedSolicitud.get().getId();
         }
-        
+
         redirectAttributes.addFlashAttribute("error", "Error al crear la solicitud");
         return "redirect:/solicitudes/formulario";
     }

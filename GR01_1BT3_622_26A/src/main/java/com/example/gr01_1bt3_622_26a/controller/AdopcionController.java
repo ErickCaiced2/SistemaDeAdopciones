@@ -2,8 +2,6 @@ package com.example.gr01_1bt3_622_26a.controller;
 
 import com.example.gr01_1bt3_622_26a.entity.Adopcion;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
-import com.example.gr01_1bt3_622_26a.entity.Solicitante;
-import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.service.AdopcionService;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
@@ -31,16 +29,12 @@ public class AdopcionController {
     public String procesarAdopcion(@PathVariable Long solicitudId, RedirectAttributes redirectAttributes) {
         Optional<Solicitud> solicitud = solicitudService.obtenerPorId(solicitudId);
 
-        if (solicitud.isPresent() && "Aprobada".equals(solicitud.get().getEstado())) {
-            Adopcion adopcion = Adopcion.builder()
-                    .solicitante(solicitud.get().getSolicitante())
-                    .mascota(solicitud.get().getMascota())
-                    .solicitud(solicitud.get())
-                    .build();
-
-            Adopcion savedAdopcion = adopcionService.crearAdopcion(adopcion);
-            redirectAttributes.addFlashAttribute("mensaje", "Adopción procesada exitosamente");
-            return "redirect:/adopciones/" + savedAdopcion.getId();
+        if (solicitud.isPresent()) {
+            Adopcion savedAdopcion = adopcionService.procesarAdopcionDesdeSolicitud(solicitud.get());
+            if (savedAdopcion != null) {
+                redirectAttributes.addFlashAttribute("mensaje", "Adopción procesada exitosamente");
+                return "redirect:/adopciones/" + savedAdopcion.getId();
+            }
         }
 
         redirectAttributes.addFlashAttribute("error", "No se puede procesar esta adopción");

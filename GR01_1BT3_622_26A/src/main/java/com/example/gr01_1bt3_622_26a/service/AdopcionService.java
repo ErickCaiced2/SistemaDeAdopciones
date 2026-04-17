@@ -1,6 +1,7 @@
 package com.example.gr01_1bt3_622_26a.service;
 
 import com.example.gr01_1bt3_622_26a.entity.Adopcion;
+import com.example.gr01_1bt3_622_26a.entity.Solicitud;
 import com.example.gr01_1bt3_622_26a.repository.AdopcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,25 @@ public class AdopcionService {
     private final AdopcionRepository adopcionRepository;
 
     public Adopcion crearAdopcion(Adopcion adopcion) {
+        return adopcionRepository.save(adopcion);
+    }
+
+    /**
+     * Verifica que la solicitud esté en estado "Aprobada" y, de ser así,
+     * construye y persiste una nueva Adopcion. Retorna null si la solicitud
+     * no cumple la condición.
+     *
+     * Método movido desde AdopcionController (Move Method).
+     */
+    public Adopcion procesarAdopcionDesdeSolicitud(Solicitud solicitud) {
+        if (!"Aprobada".equals(solicitud.getEstado())) {
+            return null;
+        }
+        Adopcion adopcion = Adopcion.builder()
+                .solicitante(solicitud.getSolicitante())
+                .mascota(solicitud.getMascota())
+                .solicitud(solicitud)
+                .build();
         return adopcionRepository.save(adopcion);
     }
 

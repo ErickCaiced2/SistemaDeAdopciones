@@ -2,6 +2,8 @@ package com.example.gr01_1bt3_622_26a.controller;
 
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Foto;
+import com.example.gr01_1bt3_622_26a.service.FileStorageService;
+import com.example.gr01_1bt3_622_26a.service.FotoService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -25,10 +24,14 @@ import java.util.List;
 @Slf4j
 public class MascotaController {
 
-    private static final String UPLOAD_DIR = "uploads/fotos/";
-
     @Autowired
     private MascotaService mascotaService;
+
+    @Autowired
+    private FotoService fotoService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     /**
      * Mostrar lista de todas las mascotas
@@ -69,8 +72,8 @@ public class MascotaController {
      */
     @PostMapping("/registrar")
     public String registrarMascota(@Valid @ModelAttribute("mascota") Mascota mascota,
-                                   BindingResult bindingResult,
-                                   Model model) {
+            BindingResult bindingResult,
+            Model model) {
         log.info("Registrando nueva mascota: {}", mascota.getNombre());
 
         if (bindingResult.hasErrors()) {
@@ -98,9 +101,9 @@ public class MascotaController {
         log.info("Mostrando detalle de mascota con ID: {}", id);
 
         Mascota mascota = mascotaService.obtenerMascotaPorId(id)
-            .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
 
-        List<Foto> fotos = mascotaService.obtenerFotosDeMascota(id);
+        List<Foto> fotos = fotoService.obtenerFotosDeMascota(id);
 
         model.addAttribute("mascota", mascota);
         model.addAttribute("fotos", fotos);
@@ -115,7 +118,7 @@ public class MascotaController {
         log.info("Mostrando formulario de edición para mascota con ID: {}", id);
 
         Mascota mascota = mascotaService.obtenerMascotaPorId(id)
-            .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
 
         model.addAttribute("mascota", mascota);
         return "mascotas/formularioEditarMascota";
@@ -126,8 +129,8 @@ public class MascotaController {
      */
     @PostMapping("/actualizar/{id}")
     public String actualizarMascota(@PathVariable Long id,
-                                    @Valid @ModelAttribute("mascota") Mascota mascota,
-                                    BindingResult bindingResult) {
+            @Valid @ModelAttribute("mascota") Mascota mascota,
+            BindingResult bindingResult) {
         log.info("Actualizando mascota con ID: {}", id);
 
         if (bindingResult.hasErrors()) {
@@ -184,7 +187,7 @@ public class MascotaController {
      */
     @PostMapping("/cargarFoto/{mascotaId}")
     public String cargarFoto(@PathVariable Long mascotaId,
-                            @RequestParam("foto") MultipartFile file) {
+            @RequestParam("foto") MultipartFile file) {
         log.info("Cargando foto para mascota con ID: {}", mascotaId);
 
         try {
@@ -193,11 +196,26 @@ public class MascotaController {
                 return "redirect:/mascotas/detalle/" + mascotaId + "?error=archivo_vacio";
             }
 
-            //Guardar archivo de foto en servidor
-            String nombreArchivo = guardarArchivo(file);
+            // Crear directorio si no existe
+            Path uploadPath = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
 
-            //Guardar objeto Foto asociado a una mascota
-            guardarFotoMascota(mascotaId, nombreArchivo);
+            // Generar nombre único para el archivo
+            String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path rutaArchivo = uploadPath.resolve(nombreArchivo);
+
+            // Guardar archivo
+            Files.write(rutaArchivo, file.getBytes());
+
+            // Crear y guardar objeto Foto
+            Foto foto = new Foto();
+            foto.setNombreArchivo(nombreArchivo);
+            foto.setRutaFoto(UPLOAD_DIR + nombreArchivo);
+            foto.setEsPrincipal(false);
+
+            mascotaService.agregarFoto(mascotaId, foto);
 
             log.info("Foto cargada exitosamente");
             return "redirect:/mascotas/detalle/" + mascotaId + "?exito=true";
@@ -206,30 +224,4 @@ public class MascotaController {
             return "redirect:/mascotas/detalle/" + mascotaId + "?error=true";
         }
     }
-
-    private void guardarFotoMascota(Long mascotaId, String nombreArchivo) {
-        Foto foto = new Foto();
-        foto.setNombreArchivo(nombreArchivo);
-        foto.setRutaFoto(UPLOAD_DIR + nombreArchivo);
-        foto.setEsPrincipal(false);
-
-        mascotaService.agregarFoto(mascotaId, foto);
-    }
-
-    private static String guardarArchivo(MultipartFile file) {
-        // Crear directorio si no existe
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        // Generar nombre único para el archivo
-        String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
-
-        // Guardar archivo
-        Files.write(rutaArchivo, file.getBytes());
-        return nombreArchivo;
-    }
 }
-

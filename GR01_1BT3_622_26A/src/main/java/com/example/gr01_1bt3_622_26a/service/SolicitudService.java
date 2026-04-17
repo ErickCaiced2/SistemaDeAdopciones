@@ -1,6 +1,8 @@
 package com.example.gr01_1bt3_622_26a.service;
 
+import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
+import com.example.gr01_1bt3_622_26a.entity.Solicitante;
 import com.example.gr01_1bt3_622_26a.repository.SolicitudRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,39 @@ import java.util.Optional;
 public class SolicitudService {
     
     private final SolicitudRepository solicitudRepository;
-    
+    private final SolicitanteService solicitanteService;
+    private final MascotaService mascotaService;
+
+    // ── MÉTODO MOVIDO DESDE SolicitudController ──────────────────────────────
+    // Recibe los parámetros crudos del formulario, resuelve las entidades
+    // relacionadas y construye el objeto Solicitud antes de persistirlo.
+    public Optional<Solicitud> crearSolicitud(
+            Long solicitanteId,
+            Long mascotaId,
+            String motivo,
+            Integer numeroMascotas,
+            String tipoVivienda,
+            Boolean tieneJardin) {
+
+        Optional<Solicitante> solicitante = solicitanteService.obtenerPorId(solicitanteId);
+        Optional<Mascota> mascota = mascotaService.obtenerPorId(mascotaId);
+
+        if (solicitante.isPresent() && mascota.isPresent()) {
+            Solicitud solicitud = Solicitud.builder()
+                    .solicitante(solicitante.get())
+                    .mascota(mascota.get())
+                    .motivo(motivo)
+                    .numeroMascotas(numeroMascotas)
+                    .tipoVivienda(tipoVivienda)
+                    .tieneJardin(tieneJardin)
+                    .build();
+            return Optional.of(solicitudRepository.save(solicitud));
+        }
+
+        return Optional.empty();
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     public Solicitud crearSolicitud(Solicitud solicitud) {
         return solicitudRepository.save(solicitud);
     }

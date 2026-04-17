@@ -1,9 +1,7 @@
 package com.example.gr01_1bt3_622_26a.service;
 
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
-import com.example.gr01_1bt3_622_26a.entity.Foto;
 import com.example.gr01_1bt3_622_26a.repository.MascotaRepository;
-import com.example.gr01_1bt3_622_26a.repository.FotoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,9 +20,6 @@ public class MascotaService {
 
     @Autowired
     private MascotaRepository mascotaRepository;
-
-    @Autowired
-    private FotoRepository fotoRepository;
 
     /**
      * Registrar una nueva mascota
@@ -148,24 +143,7 @@ public class MascotaService {
         return mascotaRepository.countByEstado(estado);
     }
 
-    /**
-     * Agregar foto a mascota
-     */
-    public Foto agregarFoto(Long mascotaId, Foto foto) {
-        log.info("Agregando foto a mascota con ID: {}", mascotaId);
-        return mascotaRepository.findById(mascotaId).map(mascota -> {
-            foto.setMascota(mascota);
-            return fotoRepository.save(foto);
-        }).orElse(null);
-    }
 
-    /**
-     * Obtener fotos de una mascota
-     */
-    public List<Foto> obtenerFotosDeMascota(Long mascotaId) {
-        log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
-        return fotoRepository.findByMascotaId(mascotaId);
-    }
 
     /**
      * Obtener estadísticas generales
@@ -180,4 +158,3 @@ public class MascotaService {
         return stats;
     }
 }
-
