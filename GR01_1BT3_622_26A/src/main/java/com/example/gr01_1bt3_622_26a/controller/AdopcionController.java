@@ -94,18 +94,28 @@ public class AdopcionController {
         Optional<Adopcion> adopcionOpt = adopcionService.obtenerPorId(id);
         if (adopcionOpt.isPresent()) {
             Adopcion adopcion = adopcionOpt.get();
-
-            if (contratoFirmado != null) adopcion.setContratoFirmado(contratoFirmado);
-            if (vacunasAplicadas != null) adopcion.setVacunasAplicadas(vacunasAplicadas);
-            if (desparasitacion != null) adopcion.setDesparasitacion(desparasitacion);
-            if (microchipColocado != null) adopcion.setMicrochipColocado(microchipColocado);
-            if (observaciones != null) adopcion.setObservaciones(observaciones);
-
+            actualizarCamposAdopcion(adopcion, contratoFirmado, vacunasAplicadas,
+                desparasitacion, microchipColocado, observaciones);
             adopcionService.actualizarAdopcion(adopcion);
             redirectAttributes.addFlashAttribute("mensaje", "Adopción actualizada exitosamente");
         }
 
         return "redirect:/adopciones/" + id;
+    }
+
+    /**
+     * REFACTORIZACIÓN 1: EXTRACT METHOD
+     * Extrae la lógica repetitiva de asignación de campos con validación null
+     * Beneficio: Elimina duplicación, mejora legibilidad, facilita testing y mantenimiento
+     */
+    private void actualizarCamposAdopcion(Adopcion adopcion, Boolean contratoFirmado,
+            Boolean vacunasAplicadas, Boolean desparasitacion,
+            Boolean microchipColocado, String observaciones) {
+        if (contratoFirmado != null) adopcion.setContratoFirmado(contratoFirmado);
+        if (vacunasAplicadas != null) adopcion.setVacunasAplicadas(vacunasAplicadas);
+        if (desparasitacion != null) adopcion.setDesparasitacion(desparasitacion);
+        if (microchipColocado != null) adopcion.setMicrochipColocado(microchipColocado);
+        if (observaciones != null) adopcion.setObservaciones(observaciones);
     }
 
     @GetMapping("/lista")

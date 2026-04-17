@@ -73,5 +73,25 @@ public class Solicitud {
             estado = "Pendiente";
         }
     }
+
+    /**
+     * REFACTORIZACIÓN 4: MOVE METHOD
+     * Mueve lógica de cambio de estado desde SolicitudService a la entidad
+     * Beneficio: Cohesión, respeta Single Responsibility, agrupa datos con comportamiento (DDD)
+     */
+    public void aprobar() {
+        this.estado = "Aprobada";
+        this.fechaRespuesta = LocalDateTime.now();
+    }
+
+    /**
+     * REFACTORIZACIÓN 4: MOVE METHOD
+     * Rechazar solicitud con razón
+     */
+    public void rechazar(String razon) {
+        this.estado = "Rechazada";
+        this.razonRechazo = razon;
+        this.fechaRespuesta = LocalDateTime.now();
+    }
 }
 

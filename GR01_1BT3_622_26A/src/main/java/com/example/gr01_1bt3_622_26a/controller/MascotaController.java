@@ -3,6 +3,7 @@ package com.example.gr01_1bt3_622_26a.controller;
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Foto;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
+import com.example.gr01_1bt3_622_26a.service.FotoUploadService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,19 @@ public class MascotaController {
 
     @Autowired
     private MascotaService mascotaService;
+
+    @Autowired
+    private FotoUploadService fotoUploadService; // REFACTORIZACIÓN 5: Inyectar nuevo servicio
+
+    /**
+     * REFACTORIZACIÓN 3: SUBSTITUTE ALGORITHM
+     * Genera nombres únicos de archivo usando UUID en lugar de timestamp
+     * Beneficio: Mejor rendimiento, elimina colisiones de nombres, más robusto
+     */
+    private String generarNombreArchivoUnico(String nombreOriginal) {
+        String extension = nombreOriginal.substring(nombreOriginal.lastIndexOf("."));
+        return java.util.UUID.randomUUID().toString() + extension;
+    }
 
     /**
      * Mostrar lista de todas las mascotas
@@ -184,6 +198,8 @@ public class MascotaController {
 
     /**
      * Cargar foto para mascota
+     * REFACTORIZACIÓN 5: EXTRACT CLASS
+     * Utiliza FotoUploadService para responsabilidad de carga
      */
     @PostMapping("/cargarFoto/{mascotaId}")
     public String cargarFoto(@PathVariable Long mascotaId,
@@ -191,34 +207,21 @@ public class MascotaController {
         log.info("Cargando foto para mascota con ID: {}", mascotaId);
 
         try {
-            if (file.isEmpty()) {
-                log.warn("Archivo de foto vacío");
-                return "redirect:/mascotas/detalle/" + mascotaId + "?error=archivo_vacio";
-            }
-
-            // Crear directorio si no existe
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            // Generar nombre único para el archivo
-            String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path rutaArchivo = uploadPath.resolve(nombreArchivo);
-
-            // Guardar archivo
-            Files.write(rutaArchivo, file.getBytes());
+            // Usar servicio extraído para guardar foto
+            String rutaFoto = fotoUploadService.guardarFoto(file);
 
             // Crear y guardar objeto Foto
             Foto foto = new Foto();
-            foto.setNombreArchivo(nombreArchivo);
-            foto.setRutaFoto(UPLOAD_DIR + nombreArchivo);
+            foto.setNombreArchivo(file.getOriginalFilename());
+            foto.setRutaFoto(rutaFoto);
             foto.setEsPrincipal(false);
 
             mascotaService.agregarFoto(mascotaId, foto);
 
-            log.info("Foto cargada exitosamente");
             return "redirect:/mascotas/detalle/" + mascotaId + "?exito=true";
+        } catch (IllegalArgumentException e) {
+            log.warn("Validación fallida: {}", e.getMessage());
+            return "redirect:/mascotas/detalle/" + mascotaId + "?error=validacion";
         } catch (IOException e) {
             log.error("Error al cargar foto", e);
             return "redirect:/mascotas/detalle/" + mascotaId + "?error=true";

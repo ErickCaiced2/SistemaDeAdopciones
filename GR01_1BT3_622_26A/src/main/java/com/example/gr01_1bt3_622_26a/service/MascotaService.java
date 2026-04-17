@@ -168,16 +168,19 @@ public class MascotaService {
     }
 
     /**
+     * REFACTORIZACIÓN 2: REPLACE TEMP WITH QUERY
+     * Elimina variable temporal 'stats' reemplazándola con Map.ofEntries()
+     * Beneficio: Código más limpio, menos variables en scope, menos riesgo de efectos secundarios
      * Obtener estadísticas generales
      */
     public java.util.Map<String, Long> obtenerEstadisticas() {
         log.info("Obteniendo estadísticas generales");
-        java.util.Map<String, Long> stats = new java.util.HashMap<>();
-        stats.put("total", mascotaRepository.count());
-        stats.put("disponibles", contarPorEstado("Disponible"));
-        stats.put("adoptados", contarPorEstado("Adoptado"));
-        stats.put("en_proceso", contarPorEstado("En proceso"));
-        return stats;
+        return java.util.Map.ofEntries(
+            java.util.Map.entry("total", mascotaRepository.count()),
+            java.util.Map.entry("disponibles", contarPorEstado("Disponible")),
+            java.util.Map.entry("adoptados", contarPorEstado("Adoptado")),
+            java.util.Map.entry("en_proceso", contarPorEstado("En proceso"))
+        );
     }
 }
 

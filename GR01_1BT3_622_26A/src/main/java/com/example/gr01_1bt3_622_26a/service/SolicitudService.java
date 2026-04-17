@@ -44,7 +44,7 @@ public class SolicitudService {
         Optional<Solicitud> solicitud = solicitudRepository.findById(id);
         if (solicitud.isPresent()) {
             Solicitud s = solicitud.get();
-            s.setEstado("Aprobada");
+            s.aprobar(); // REFACTORIZACIÓN 4: Usar método de entidad
             return solicitudRepository.save(s);
         }
         return null;
@@ -54,8 +54,7 @@ public class SolicitudService {
         Optional<Solicitud> solicitud = solicitudRepository.findById(id);
         if (solicitud.isPresent()) {
             Solicitud s = solicitud.get();
-            s.setEstado("Rechazada");
-            s.setRazonRechazo(razon);
+            s.rechazar(razon); // REFACTORIZACIÓN 4: Usar método de entidad
             return solicitudRepository.save(s);
         }
         return null;
