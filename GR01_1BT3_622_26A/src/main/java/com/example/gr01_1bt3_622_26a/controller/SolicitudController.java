@@ -51,15 +51,12 @@ public class SolicitudController {
         redirectAttributes.addFlashAttribute("error", "Error al crear la solicitud");
         return "redirect:/solicitudes/formulario";
     }
-    
+
     @GetMapping("/{id}")
     public String verDetalle(@PathVariable Long id, Model model) {
-        Optional<Solicitud> solicitud = solicitudService.obtenerPorId(id);
-        if (solicitud.isPresent()) {
-            model.addAttribute("solicitud", solicitud.get());
-            return "solicitudes/detalleSolicitud";
-        }
-        return "redirect:/";
+        model.addAttribute("solicitud",
+                solicitudService.obtenerPorId(id).orElse(null));
+        return "solicitudes/detalleSolicitud";
     }
     
     @GetMapping("/pendientes/lista")
