@@ -31,20 +31,14 @@ skinparam arrow {
 }
 
 legend top left
-  **Flujo Básico:**
+  Flujo Básico:
   1. El administrador selecciona la opción Consultar Mascotas.
   2. El sistema consulta los registros de mascotas.
-  3. El sistema presenta el listado de mascotas registradas con información básica
-     (nombre, especie, estado de adopción) y una foto de cada mascota en tamaño
-     150x150 px, incluyendo la opción "Detalles" para cada registro.
-  4. El administrador ingresa criterios de búsqueda o filtrado
-     (nombre, especie, estado de adopción u otros).
-  5. El sistema actualiza el listado de mascotas según los criterios ingresados,
-     manteniendo la visualización de la foto y la opción "Detalles" por cada mascota.
+  3. El sistema presenta el listado de mascotas registradas con información básica (nombre, especie, estado de adopción) y una foto de cada mascota en tamaño 150x150 px, incluyendo la opción "Detalles" para cada registro.
+  4. El administrador ingresa criterios de búsqueda o filtrado (nombre, especie, estado de adopción u otros).
+  5. El sistema actualiza el listado de mascotas según los criterios ingresados, manteniendo la visualización de la foto y la opción "Detalles" por cada mascota.
   6. El administrador selecciona la opción "Detalles" de una mascota.
-  7. El sistema carga una nueva pantalla con la información completa de la mascota
-     (nombre de la mascota, edad de la mascota, sexo, especie, raza, tamaño,
-     estado de salud, diagnósticos previos, estado de adopción, descripción y foto(s)).
+  7. El sistema carga una nueva pantalla con la información completa de la mascota (nombre de la mascota, edad de la mascota, sexo, especie, raza, tamaño, estado de salud, diagnósticos previos, estado de adopción, descripción y foto(s)).
 end legend
 
 ' ─── ACTOR ───────────────────────────────────────────────────
