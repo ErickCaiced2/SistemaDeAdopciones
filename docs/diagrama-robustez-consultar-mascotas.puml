@@ -1,0 +1,102 @@
+@startuml diagrama-robustez-consultar-mascotas
+
+title Diagrama de Robustez\nHU: Como administrador quiero consultar mascotas registradas en el sistema
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam actor {
+    BorderColor #2C3E50
+    BackgroundColor #ECF0F1
+    FontStyle bold
+}
+skinparam boundary {
+    BorderColor #2980B9
+    BackgroundColor #D6EAF8
+    FontStyle bold
+}
+skinparam control {
+    BorderColor #27AE60
+    BackgroundColor #D5F5E3
+    FontStyle bold
+}
+skinparam entity {
+    BorderColor #8E44AD
+    BackgroundColor #E8DAEF
+    FontStyle bold
+}
+skinparam arrow {
+    Color #2C3E50
+}
+
+' ─── ACTOR ───────────────────────────────────────────────────
+actor "Administrador" as admin
+
+' ─── BOUNDARY (Interfaces / Vistas) ──────────────────────────
+boundary "Página: Lista de\nMascotas\n(ListaMascotas)" as paginaLista
+boundary "Página: Detalle de\nMascota\n(DetalleMascota)" as paginaDetalle
+
+' ─── CONTROL ─────────────────────────────────────────────────
+control "ConsultarMascotaController" as ctrl
+
+' ─── ENTITY (Entidades de Dominio) ───────────────────────────
+entity "Mascota\n(id, nombre, especie, raza,\ntamaño, sexo, edad,\nestadoSalud, estadoAdopcion,\ndescripcion, diagnosticosPrevios)" as eMascota
+entity "Foto\n(id, url, idMascota)" as eFoto
+
+' ─── FLUJO 1: Listar mascotas ────────────────────────────────
+admin --> paginaLista           : 1. seleccionarConsultarMascotas()
+paginaLista --> ctrl            : 2.1. solicitarMascotas()
+ctrl --> eMascota               : 2.2. obtenerMascotas()
+eMascota --> ctrl               : 2.3. retornarListaMascotas()
+ctrl --> eFoto                  : 2.3. obtenerFotos()
+ctrl --> paginaLista            : 3. mostrarListado()
+
+' ─── FLUJO 2: Filtrar mascotas ───────────────────────────────
+admin --> paginaLista           : 4. ingresarFiltros(criterios)
+paginaLista --> ctrl            : 5.1. filtrarMascotas(criterios)
+ctrl --> eMascota               : 5.2. filtrar(criterios)
+eMascota --> ctrl               : 5.3. retornarResultadosFiltrados()
+ctrl --> paginaLista            : 5.4. actualizarListado()
+
+' ─── FLUJO 3: Ver detalle de una mascota ─────────────────────
+admin --> paginaLista           : 6. verDetalles(idMascota)
+paginaLista --> ctrl            : 7.1. solicitarDetalle(idMascota)
+ctrl --> eMascota               : 7.2. obtenerDetalle(idMascota)
+ctrl --> eFoto                  : 7.3. obtenerFotos(idMascota)
+ctrl --> paginaDetalle          : 7.4. mostrarDetalle()
+paginaDetalle --> admin         : 7.5. presentarInformacion()
+
+note right of eMascota
+  **Atributos visibles en lista:**
+  • nombre
+  • especie
+  • estadoAdopcion
+  • foto (150x150 px)
+
+  **Atributos visibles en detalle:**
+  • nombre, edad, sexo
+  • especie, raza, tamaño
+  • estadoSalud
+  • diagnosticosPrevios
+  • estadoAdopcion
+  • descripcion
+  • foto(s)
+end note
+
+note bottom of paginaLista
+  La vista **ListaMascotas** muestra:
+  • Listado con foto (150x150 px) por mascota
+  • Nombre, especie y estado de adopción
+  • Criterios de búsqueda/filtrado
+  • Opción "Detalles" por cada registro
+end note
+
+note bottom of paginaDetalle
+  La vista **DetalleMascota** muestra:
+  • Información completa de la mascota
+  • Diagnósticos previos y estado de salud
+  • Foto(s) de la mascota
+end note
+
+@enduml
