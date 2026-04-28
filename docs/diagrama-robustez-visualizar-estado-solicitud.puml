@@ -1,0 +1,95 @@
+@startuml diagrama-robustez-visualizar-estado-solicitud
+
+title Diagrama de Robustez\nHU: Como solicitante quiero visualizar el estado de mi solicitud de adopción
+
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam actor {
+    BorderColor #2C3E50
+    BackgroundColor #ECF0F1
+    FontStyle bold
+}
+skinparam boundary {
+    BorderColor #2980B9
+    BackgroundColor #D6EAF8
+    FontStyle bold
+}
+skinparam control {
+    BorderColor #27AE60
+    BackgroundColor #D5F5E3
+    FontStyle bold
+}
+skinparam entity {
+    BorderColor #8E44AD
+    BackgroundColor #E8DAEF
+    FontStyle bold
+}
+skinparam arrow {
+    Color #2C3E50
+}
+
+' ─── ACTOR ───────────────────────────────────────────────────
+actor "Solicitante" as solicitante
+
+' ─── BOUNDARY (Interfaces / Vistas JSP) ──────────────────────
+boundary "Página: Lista de\nMis Solicitudes\n(listaSolicitudes.jsp)" as paginaLista
+boundary "Página: Detalle de\nSolicitud\n(detalleSolicitud.jsp)" as paginaDetalle
+
+' ─── CONTROL (Controladores y Servicios Spring) ──────────────
+control "SolicitudController\n(GET /solicitudes/solicitante/{id})" as ctrlLista
+control "SolicitudController\n(GET /solicitudes/{id})" as ctrlDetalle
+control "SolicitudService\nobtenerPorSolicitante()" as svcLista
+control "SolicitudService\nobtenerPorId()" as svcDetalle
+
+' ─── ENTITY (Entidades de Dominio) ───────────────────────────
+entity "Solicitud\n(id, estado, fechaSolicitud,\nmotivo, observaciones,\nrazonRechazo)" as eSolicitud
+entity "Mascota\n(id, nombre, tipo, raza)" as eMascota
+entity "Solicitante\n(id, nombre, apellido, email)" as eSolicitante
+
+' ─── FLUJO PRINCIPAL: Listar solicitudes del solicitante ─────
+solicitante --> paginaLista         : 1. Accede a\n"Mis Solicitudes"
+paginaLista --> ctrlLista           : 2. GET /solicitudes/\nsolicitante/{solicitanteId}
+ctrlLista --> svcLista              : 3. obtenerPorSolicitante\n(solicitanteId)
+svcLista --> eSolicitante           : 4. Verifica solicitante
+svcLista --> eSolicitud             : 5. findBySolicitanteId()\nRetorna lista con estado
+eSolicitud --> svcLista             : 6. Lista de solicitudes\n[Pendiente / Aprobada /\nRechazada / Cancelada]
+svcLista --> ctrlLista              : 7. Lista de solicitudes
+ctrlLista --> paginaLista           : 8. model: solicitudes
+paginaLista --> solicitante         : 9. Muestra lista con\nestado de cada solicitud
+
+' ─── FLUJO SECUNDARIO: Ver detalle de una solicitud ──────────
+solicitante --> paginaDetalle       : 10. Selecciona una\nsolicitud de la lista
+paginaDetalle --> ctrlDetalle       : 11. GET /solicitudes/{id}
+ctrlDetalle --> svcDetalle          : 12. obtenerPorId(id)
+svcDetalle --> eSolicitud           : 13. findById(id)
+svcDetalle --> eMascota             : 14. Carga datos\nde la mascota
+eSolicitud --> svcDetalle           : 15. Solicitud con todos\nsus atributos y estado
+svcDetalle --> ctrlDetalle          : 16. Optional<Solicitud>
+ctrlDetalle --> paginaDetalle       : 17. model: solicitud\n(con estado detallado)
+paginaDetalle --> solicitante       : 18. Muestra estado:\n- Pendiente\n- Aprobada\n- Rechazada\ncon fecha y observaciones
+
+note right of eSolicitud
+  **Estados posibles:**
+  • Pendiente (estado inicial)
+  • Aprobada
+  • Rechazada (incluye razonRechazo)
+  • Cancelada
+  
+  **Atributos clave visibles:**
+  • fechaSolicitud
+  • fechaRespuesta
+  • observaciones
+  • razonRechazo
+end note
+
+note bottom of paginaDetalle
+  La vista **detalleSolicitud.jsp** muestra:
+  • Badge de color según el estado
+  • Información del solicitante y mascota
+  • Motivo, tipo de vivienda, jardín
+  • Razón de rechazo (si aplica)
+end note
+
+@enduml
